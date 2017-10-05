@@ -105,19 +105,15 @@ void OctoSK6812::begin(void)
 	switch (params & 0xF0) {
 	case WS2811_400kHz:
 		frequency = 400000;
-		frameSetDelay = 50;
 		break;
 	case WS2811_800kHz:
 		frequency = 800000;
-		frameSetDelay = 50;
 		break;
 	case WS2813_800kHz:
 		frequency = 800000;
-		frameSetDelay = 300;
 		break;
 	default:
 		frequency = 800000;
-		frameSetDelay = 50;
 	}
 
 
@@ -248,7 +244,7 @@ int OctoSK6812::busy(void)
 {
 	if (update_in_progress) return 1;
 	// busy for 50 (or 300 for ws2813) us after the done interrupt, for WS2811 reset
-	if (micros() - update_completed_at < frameSetDelay) return 1;
+	if (micros() - update_completed_at < 300) return 1;
 	return 0;
 }
 
@@ -266,18 +262,19 @@ void OctoSK6812::show(void)
 		memcpy(frameBuffer, drawBuffer, stripLen * pixelBits);
 	}
 	// wait for WS2811 reset
-	while (micros() - update_completed_at < frameSetDelay) ;
+	while (micros() - update_completed_at < 300) ;
 	// ok to start, but we must be very careful to begin
 	// without any prior 3 x 800kHz DMA requests pending
 
 #if defined(__MK20DX128__)
-	uint32_t cv = FTM1_C1V;
+	uint32_t cv = FTM1_C0V;
 	noInterrupts();
 	// CAUTION: this code is timing critical.
 	while (FTM1_CNT <= cv) ;
 	while (FTM1_CNT > cv) ; // wait for beginning of an 800 kHz cycle
 	while (FTM1_CNT < cv) ;
 	FTM1_SC = 0;            // stop FTM1 timer (hopefully before it rolls over)
+	FTM1_CNT = 0;
 	update_in_progress = 1;
 	//digitalWriteFast(9, HIGH); // oscilloscope trigger
 	PORTB_ISFR = (1<<0);    // clear any prior rising edge
@@ -298,13 +295,14 @@ void OctoSK6812::show(void)
 	FTM2_C0SC = 0x28;
 	FTM2_C1SC = 0x28;
 	delay(1);
-	uint32_t cv = FTM2_C1V;
+	uint32_t cv = FTM2_C0V;
 	noInterrupts();
 	// CAUTION: this code is timing critical.
 	while (FTM2_CNT <= cv) ;
 	while (FTM2_CNT > cv) ; // wait for beginning of an 800 kHz cycle
 	while (FTM2_CNT < cv) ;
 	FTM2_SC = 0;             // stop FTM2 timer (hopefully before it rolls over)
+	FTM2_CNT = 0;
 	update_in_progress = 1;
 	//digitalWriteFast(9, HIGH); // oscilloscope trigger
 	PORTB_ISFR = (1<<18);    // clear any prior rising edge
@@ -396,7 +394,13 @@ void OctoSK6812::setPixel(uint32_t num, int color)
 		color = ((color<<8)&0xFF0000) | ((color>>8)&0x00FF00) | (color&0x0000FF);
 		break;
 		case SK6812_GBR:
+		color = ((color<<16)&0xFFFF00) | ((color>>8)&0x0000FF);
+		break;
+		case SK6812_BRG:
 		color = ((color<<8)&0xFFFF00) | ((color>>16)&0x0000FF);
+		break;
+		case SK6812_BGR:
+		color = ((color<<16)&0xFF0000) | (color&0x00FF00) | ((color>>16)&0x0000FF);
 		break;
 		case SK6812_GRBW:
 		color = ((color<<8)&0xFF000000) | ((color>>8)&0x00FF0000) | (color&0x0000FFFF);

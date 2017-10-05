@@ -27,6 +27,10 @@
 #ifndef OctoSK6812_h
 #define OctoSK6812_h
 
+#ifdef __AVR__
+#error "Sorry, OctoWS2811 only works on 32 bit Teensy boards.  AVR isn't supported."
+#endif
+
 #include <Arduino.h>
 #include "DMAChannel.h"
 
@@ -86,7 +90,6 @@ private:
 	static void *frameBuffer;
 	static void *drawBuffer;
 	static uint8_t params;
-  uint16_t frameSetDelay;
 	static DMAChannel dma1, dma2, dma3;
 	static void isr(void);
 };
