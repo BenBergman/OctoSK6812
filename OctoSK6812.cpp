@@ -414,7 +414,7 @@ void OctoSK6812::setPixel(uint32_t num, int color)
 	offset = num % stripLen;
 	bit = (1<<strip);
 	p = ((uint8_t *)drawBuffer) + offset * pixelBits;
-	for (mask = (1<<23) ; mask ; mask >>= 1) {
+	for (mask = (1<<(pixelBits-1)) ; mask ; mask >>= 1) {
 		if (color & mask) {
 			*p++ |= bit;
 		} else {
