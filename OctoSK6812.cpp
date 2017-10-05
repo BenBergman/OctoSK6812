@@ -30,6 +30,7 @@
 
 
 uint16_t OctoSK6812::stripLen;
+uint8_t OctoSK6812::pixelBits;
 void * OctoSK6812::frameBuffer;
 void * OctoSK6812::drawBuffer;
 uint8_t OctoSK6812::params;
