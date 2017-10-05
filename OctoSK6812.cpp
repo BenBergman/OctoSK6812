@@ -48,13 +48,17 @@ OctoSK6812::OctoSK6812(uint32_t numPerStrip, void *frameBuf, void *drawBuf, uint
 	frameBuffer = frameBuf;
 	drawBuffer = drawBuf;
 	params = config;
-	if (params > 3) {
-		// if RGBW strips we need 32 bits per led
-		pixelBits = 32;
-	} else {
-		pixelBits = 24;
+	uint8_t stripType = config & 0x07;
+	switch (stripType) {
+		case SK6812_RGBW:
+		case SK6812_GRBW:
+			// if RGBW strips we need 32 bits per led
+			pixelBits = 32;
+			break;
+		default:
+			pixelBits = 24;
+			break;
 	}
-
 }
 
 // Waveform timing: these set the high time for a 0 and 1 bit, as a fraction of
@@ -444,7 +448,13 @@ int OctoSK6812::getPixel(uint32_t num)
 		color = ((color<<8)&0xFF0000) | ((color>>8)&0x00FF00) | (color&0x0000FF);
 		break;
 		case SK6812_GBR:
+		color = ((color<<16)&0xFFFF00) | ((color>>8)&0x0000FF);
+		break;
+		case SK6812_BRG:
 		color = ((color<<8)&0xFFFF00) | ((color>>16)&0x0000FF);
+		break;
+		case SK6812_BGR:
+		color = ((color<<16)&0xFF0000) | (color&0x00FF00) | ((color>>16)&0x0000FF);
 		break;
 		case SK6812_GRBW:
 		color = ((color<<8)&0xFF000000) | ((color>>8)&0x00FF0000) | (color&0x0000FFFF);

@@ -45,9 +45,11 @@
 #define SK6812_RBG  1
 #define SK6812_GRB  2  // Most LED strips are wired this way
 #define SK6812_GBR  3
+#define SK6812_BRG  4
+#define SK6812_BGR  5
 
-#define SK6812_RGBW 4
-#define SK6812_GRBW 5
+#define SK6812_RGBW 6
+#define SK6812_GRBW 7
 
 #define WS2811_800kHz 0x00	// Nearly all WS2811 are 800 kHz
 #define WS2811_400kHz 0x10	// Adafruit's Flora Pixels
