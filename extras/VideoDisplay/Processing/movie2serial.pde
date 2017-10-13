@@ -88,7 +88,7 @@ void movieEvent(Movie m) {
     ledImage[i].copy(m, xoffset, yoffset, xwidth, yheight,
                      0, 0, ledImage[i].width, ledImage[i].height);
     // convert the LED image to raw data
-    byte[] ledData =  new byte[(ledImage[i].width * ledImage[i].height * 3) + 3];
+    byte[] ledData =  new byte[(ledImage[i].width * ledImage[i].height * 4) + 3];
     image2data(ledImage[i], ledData, ledLayout[i]);
     if (i == 0) {
       ledData[0] = '*';  // first Teensy is the frame sync master
@@ -110,7 +110,8 @@ void movieEvent(Movie m) {
 // of 8.  The data array must be the proper size for the image.
 void image2data(PImage image, byte[] data, boolean layout) {
   int offset = 3;
-  int x, y, xbegin, xend, xinc, mask;
+  int x, y, xbegin, xend, xinc;
+  long mask;
   int linesPerPin = image.height / 8;
   int pixel[] = new int[8];
   
@@ -133,7 +134,7 @@ void image2data(PImage image, byte[] data, boolean layout) {
         pixel[i] = colorWiring(pixel[i]);
       }
       // convert 8 pixels to 24 bytes
-      for (mask = 0x800000; mask != 0; mask >>= 1) {
+      for (mask = 0x80000000L; mask != 0L; mask >>= 1L) {
         byte b = 0;
         for (int i=0; i < 8; i++) {
           if ((pixel[i] & mask) != 0) b |= (1 << i);
@@ -153,7 +154,7 @@ int colorWiring(int c) {
   red = gammatable[red];
   green = gammatable[green];
   blue = gammatable[blue];
-  return (green << 16) | (red << 8) | (blue); // GRB - most common wiring
+  return (green << 24) | (red << 16) | (blue << 8) | (0x00); // GRBW - most common wiring
 }
 
 // ask a Teensy board for its LED configuration, and set up the info for it.
@@ -252,4 +253,3 @@ double percentageFloat(int percent) {
   if (percent ==  8) return 1.0 / 12.0;
   return (double)percent / 100.0;
 }
-

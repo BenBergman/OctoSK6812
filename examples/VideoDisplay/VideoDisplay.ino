@@ -58,7 +58,7 @@ https://github.com/PaulStoffregen/OctoWS2811/tree/master/extras
     ports on the same motherboard, may give poor performance.
 */
 
-#include <OctoWS2811.h>
+#include <OctoSK6812.h>
 
 // The actual arrangement of the LEDs connected to this Teensy 3.0 board.
 // LED_HEIGHT *must* be a multiple of 8.  When 16, 24, 32 are used, each
@@ -95,13 +95,13 @@ https://github.com/PaulStoffregen/OctoWS2811/tree/master/extras
 
 const int ledsPerStrip = LED_WIDTH * LED_HEIGHT / 8;
 
-DMAMEM int displayMemory[ledsPerStrip*6];
-int drawingMemory[ledsPerStrip*6];
+DMAMEM int displayMemory[ledsPerStrip*8];
+int drawingMemory[ledsPerStrip*8];
 elapsedMicros elapsedUsecSinceLastFrameSync = 0;
 
-const int config = WS2811_800kHz; // color config is on the PC side
+const int config = SK6812_GRBW; // color config is on the PC side
 
-OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
+OctoSK6812 leds(ledsPerStrip, displayMemory, drawingMemory, config);
 
 void setup() {
   pinMode(12, INPUT_PULLUP); // Frame Sync
